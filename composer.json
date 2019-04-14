@@ -1,0 +1,22 @@
+{
+    "name": "ircmaxell/php-elf-symbolresolver",
+    "description": "A linux object file (ELF) parser",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anthony Ferrara",
+            "email": "ircmaxell@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "PHPELFSymbolResolver\\": "lib/"
+        }
+    }
+
+}
