@@ -76,7 +76,7 @@ class Parser {
     protected function parseSymbolTable(Section $section) {
         $offset = $section->offset;
         $size = $section->size;
-        $end = $mainOffset + $size;
+        $end = $offset + $size;
         if ($section->type === Section::TYPE_SYMTAB) {
             $strtab = $this->findSection('.strtab');
         } else {
