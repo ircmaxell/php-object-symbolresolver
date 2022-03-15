@@ -1,9 +1,8 @@
 <?php
 
-namespace PHPELFSymbolResolver;
+namespace PHPObjectSymbolResolver\ELF;
 
 class Section {
-
     public int $name;
     public string $nameString;
 
@@ -24,6 +23,7 @@ class Section {
     public int $flags;
     public int $addr;
     public int $offset;
+    public int $size;
     public int $link;
     public int $info;
     public int $addralign;
