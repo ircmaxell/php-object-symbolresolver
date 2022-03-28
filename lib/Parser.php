@@ -2,19 +2,24 @@
 
 namespace PHPObjectSymbolResolver;
 
+use PHPObjectSymbolResolver\MachO\FatBinary;
+
 abstract class Parser {
 	public string $data;
 	public ObjectFile $obj;
 
 	public abstract function parse(string $file): ObjectFile;
 
-	public static function parserFor(string $file): Parser {
+	public static function parseFor(string $file): ObjectFile {
 		$magic = file_get_contents($file, false, null, 0, 4);
 		if ($magic === ELF\Parser::HEADER) {
-			return new ELF\Parser;
+			return (new ELF\Parser)->parse($file);
 		} elseif (MachO\Parser::isValidMagic($magic)) {
-			return new MachO\Parser;
-		}
+			return (new MachO\Parser)->parse($file);
+		} elseif ($magic === FatBinary::MAGIC) {
+            $fatBinary = new FatBinary($file);
+            return (new MachO\Parser)->parse($file, $fatBinary->getOffsetForLocalArch());
+        }
 
 		throw new \LogicException("File is neither in ELF nor Mach-O format");
 	}

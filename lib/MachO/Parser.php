@@ -10,10 +10,10 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
 		return $magic === self::HEADER_32 || $magic === self::HEADER_64 || $magic === strrev(self::HEADER_32) || $magic === strrev(self::HEADER_64);
 	}
 
-	public function parse(string $file): ObjectFile {
-		$this->data = file_get_contents($file);
+	public function parse(string $file, int $offset = 0): ObjectFile {
+		$this->data = file_get_contents($file, false, null, $offset);
 		if (strlen($this->data) < 16) {
-			throw new \LogicException("File is too short to be an ELF file");
+			throw new \LogicException("File is too short to be a Mach-O file");
 		}
 		$this->obj = new ObjectFile;
 		$offset = $this->parseMachOHeader();
