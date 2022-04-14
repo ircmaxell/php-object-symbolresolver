@@ -20,6 +20,10 @@ class Symbol implements \PHPObjectSymbolResolver\Symbol {
     public int $other;
     public int $shndx;
 
+    public function isOther(int $other): bool {
+        return ($this->other & 0x3) === $other;
+    }
+
     public function isLocal(): bool {
         return ($this->info >> 4) === self::BINDING_LOCAL;
     }

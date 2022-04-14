@@ -36,6 +36,10 @@ class Symbol implements \PHPObjectSymbolResolver\Symbol {
 
     public string $name;
 
+    public function isOther(int $other): bool {
+        return false;
+    }
+
     public function isLocal(): bool {
 		$type = $this->nType & ((self::N_TYPE & ~self::N_PEXT) | self::N_EXT);
 		return $type === self::N_ABS || $type === self::N_SECT;
