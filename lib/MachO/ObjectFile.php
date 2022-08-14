@@ -37,7 +37,7 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
         foreach ($this->commands as $command) {
 			if ($command->parsed instanceof SymtabCommand) {
 				foreach ($command->parsed->symbols as $symbol) {
-					if (!$symbol->isGlobal()) {
+					if (!$symbol->isGlobal() && !$symbol->isWeak()) {
 						continue;
 					}
 					$result[] = $symbol->name;

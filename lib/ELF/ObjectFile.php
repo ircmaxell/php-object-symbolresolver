@@ -45,7 +45,7 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
                 if (!$symbol->isOther(Symbol::VISIBILITY_DEFAULT)) {
                     continue;
                 }
-                if (!$symbol->isGlobal()) {
+                if (!$symbol->isGlobal() && !$symbol->isWeak()) {
                     continue;
                 }
                 $result[] = $symbol->nameString;
