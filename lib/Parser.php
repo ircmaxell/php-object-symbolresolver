@@ -11,6 +11,10 @@ abstract class Parser {
 	public abstract function parse(string $file): ObjectFile;
 
 	public static function parseFor(string $file): ObjectFile {
+        if (!file_exists($file) && file_exists($tbdFile = MachO\TbdObjectFile::searchTdbFile($file))) {
+            return MachO\TbdObjectFile::readTdb($tbdFile);
+        }
+
 		$magic = file_get_contents($file, false, null, 0, 4);
 		if ($magic === ELF\Parser::HEADER) {
 			return (new ELF\Parser)->parse($file);
@@ -61,11 +65,15 @@ abstract class Parser {
 		return $this->stringToInt($result);
 	}
 
-	protected function parseNullTerminatedString(int $width, int &$offset): string {
-		$result = substr($this->data, $offset, $width);
-		$offset += $width;
-		$data = strstr($result, "\0", true);
-		return $data === false ? $result : $data;
+	protected function parseNullTerminatedString(int &$offset, int $width = 0): string {
+        if ($width === 0) {
+            return substr($this->data, $offset, strpos($this->data, "\0", $offset) - $offset);
+        } else {
+            $result = substr($this->data, $offset, $width);
+            $offset += $width;
+            $data = strstr($result, "\0", true);
+            return $data === false ? $result : $data;
+        }
 	}
 
 	protected function stringToInt(string $string): int {

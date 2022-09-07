@@ -29,5 +29,8 @@ class Section {
     public int $addralign;
     public int $entsize;
 
+    /** @var Symbol[] */
     public array $symbols = [];
+    /** @var DynamicEntry[] */
+    public array $dynamic = [];
 }

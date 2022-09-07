@@ -18,6 +18,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         $this->parseElfSections();
         $this->parseStringSections();
         $this->parseSymbolTables();
+        $this->parseDynamicSections();
 
         $this->data = '';
         return $this->obj;
@@ -88,7 +89,39 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
             $symbol->nameString = $this->readStringSectionOffset($strtab, $symbol->name);
             $section->symbols[] = $symbol;
         }
+    }
 
+    protected function parseDynamicSections(): void {
+        foreach ($this->obj->sections as $section) {
+            if ($section->type !== Section::TYPE_DYNAMIC) {
+                continue;
+            }
+            $this->parseDynamicSection($section);
+        }
+    }
+
+    protected function parseDynamicSection(Section $section) {
+        $offset = $section->offset;
+        $size = $section->size;
+        $end = $offset + $size;
+        $section->dynamic = [];
+
+        $strtab = $this->findSection('.dynstr');
+
+        while ($offset < $end) {
+            $dynamic = $this->parseDynamicEntry($offset);
+            if ($dynamic->tag === DynamicEntry::DT_NEEDED || $dynamic->tag === DynamicEntry::DT_SONAME || $dynamic->tag === DynamicEntry::DT_RPATH) {
+                $dynamic->string = $this->readStringSectionOffset($strtab, $dynamic->value);
+            }
+            $section->dynamic[] = $dynamic;
+        }
+    }
+
+    protected function parseDynamicEntry(int &$offset) {
+        $entry = new DynamicEntry;
+        $entry->tag = $this->parseOff($offset);
+        $entry->value = $this->parseOff($offset);
+        return $entry;
     }
 
     protected function findSection(string $name): Section {

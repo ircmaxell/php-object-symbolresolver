@@ -32,6 +32,41 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
     public array $commands = [];
 	public array $segments = [];
 
+    /** @var ObjectFile[] */
+    public ?array $dependentObjects = null;
+
+    public function resolveDependentObjectsRecursively(&$objects = []) {
+        foreach ($this->commands as $command) {
+            if ($command->parsed instanceof DylibLoadCommand) {
+                if ($command->cmd === Command::LC_ID_DYLIB) {
+                    $objects[basename($command->parsed->name)] = $this;
+                }
+            }
+        }
+        foreach ($this->commands as $command) {
+            if ($command->parsed instanceof DylibLoadCommand) {
+                // TODO support for @executable_path, @loader_path, @rpath
+                if ($command->cmd === Command::LC_LOAD_DYLIB && !isset($objects[basename($command->parsed->name)])) {
+                    \PHPObjectSymbolResolver\Parser::parseFor($command->parsed->name)->resolveDependentObjectsRecursively($objects);
+                }
+            }
+        }
+        return $objects;
+    }
+
+    public function getAllSymbolsRecursively(): array {
+        if ($this->dependentObjects === null) {
+            $this->dependentObjects = $this->resolveDependentObjectsRecursively();
+        }
+
+        $symbols = $this->getAllSymbols();
+        foreach ($this->dependentObjects as $object) {
+            array_push($symbols, ...$object->getAllSymbols());
+        }
+
+        return array_unique($symbols);
+    }
+
     public function getAllSymbols(): array {
         $result = [];
         foreach ($this->commands as $command) {

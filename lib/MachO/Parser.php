@@ -5,6 +5,8 @@ namespace PHPObjectSymbolResolver\MachO;
 class Parser extends \PHPObjectSymbolResolver\Parser {
 	const HEADER_32 = "\xce\xfa\xed\xfe";
 	const HEADER_64 = "\xcf\xfa\xed\xfe";
+    
+    const COMMAND_HEADER_SIZE = 8;
 
 	public static function isValidMagic($magic) {
 		return $magic === self::HEADER_32 || $magic === self::HEADER_64 || $magic === strrev(self::HEADER_32) || $magic === strrev(self::HEADER_64);
@@ -56,7 +58,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
 		$cmd->cmd = $this->parseWord($offset);
 		$size = $this->parseWord($offset);
 		$cmd->offset = $offset;
-		$offset += $size - 8;
+		$offset += $size - self::COMMAND_HEADER_SIZE;
 		return $cmd;
 	}
 
@@ -98,7 +100,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
 				$segment = new Segment;
 				$command->parsed = $segment;
 				$this->obj->segments[] = $segment;
-				$segment->name = $this->parseNullTerminatedString(16, $offset);
+				$segment->name = $this->parseNullTerminatedString($offset, 16);
 				$segment->vmaddr = $this->parseXWord($offset);
 				$segment->vmsize = $this->parseXWord($offset);
 				$segment->fileoff = $this->parseXWord($offset);
@@ -111,8 +113,8 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
 				for ($i = 0; $i < $segment->nSects; ++$i) {
 					$section = new Section;
 					$segment->sections[] = $section;
-					$section->name = $this->parseNullTerminatedString(16, $offset);
-					$section->segname = $this->parseNullTerminatedString(16, $offset);
+					$section->name = $this->parseNullTerminatedString($offset, 16);
+					$section->segname = $this->parseNullTerminatedString($offset, 16);
 					$section->addr = $this->parseXWord($offset);
 					$section->size = $this->parseXWord($offset);
 					$section->offset = $this->parseWord($offset);
@@ -124,6 +126,18 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
 					$section->reserved2 = $this->parseWord($offset);
 				}
 				break;
+
+            case Command::LC_ID_DYLIB:
+            case Command::LC_LOAD_DYLIB:
+                $offset = $command->offset;
+                $dylib = new DylibLoadCommand;
+                $command->parsed = $dylib;
+                $nameOffset = $command->offset - self::COMMAND_HEADER_SIZE + $this->parseWord($offset);
+                $dylib->name = $this->parseNullTerminatedString($nameOffset);
+                $dylib->timestamp = $this->parseWord($offset);
+                $dylib->currentVersion = $this->parseWord($offset);
+                $dylib->compatibilityVersion = $this->parseWord($offset);
+                break;
 		}
 	}
 }

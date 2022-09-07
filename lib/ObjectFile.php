@@ -8,6 +8,11 @@ interface ObjectFile {
 
 	public function hasLowestByteFirst(): bool;
 
-	/** @return string[] */
+    public function resolveDependentObjectsRecursively();
+
+    /** @return string[] */
 	public function getAllSymbols(): array;
+
+	/** @return string[] */
+	public function getAllSymbolsRecursively(): array;
 }
