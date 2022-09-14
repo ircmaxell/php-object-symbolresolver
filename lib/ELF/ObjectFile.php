@@ -67,7 +67,9 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
             self::$sharedLibrarySearchDirectories = [
                 "/lib",
                 "/usr/lib",
-            ];
+                "/lib64",
+                "/usr/lib64",
+	    ];
             if (file_exists("/etc/ld.so.conf")) {
                 array_unshift(self::$sharedLibrarySearchDirectories, ...self::collectSharedSearchPaths("/etc/ld.so.conf"));
             }
