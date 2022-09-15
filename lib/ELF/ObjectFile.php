@@ -77,6 +77,11 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
         return self::$sharedLibrarySearchDirectories;
     }
 
+    public static function addSharedSearchDirectory($path) {
+        self::getSharedSearchPaths();
+        self::$sharedLibrarySearchDirectories[] = rtrim($path, "/");
+    }
+
     public function resolveDependentObjectsRecursively(&$objects = []) {
         $dependencies = [];
 
