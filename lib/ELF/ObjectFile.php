@@ -30,6 +30,7 @@ class ObjectFile implements \PHPObjectSymbolResolver\ObjectFile {
     public int $phoff;
     public int $shoff;
     public int $flags;
+    public int $ehsize;
     public int $phentsize;
     public int $phnum;
     public int $shentsize;
