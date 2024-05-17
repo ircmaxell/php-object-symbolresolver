@@ -6,7 +6,6 @@ namespace PHPObjectSymbolResolver\PE;
  * @see https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#section-table-section-headers
  */
 class Section {
-    public int $offset;
     /**
      * An 8-byte, null-padded UTF-8 encoded string. If the string is exactly 8
      * characters long, there is no terminating null. For longer names, this
@@ -16,7 +15,7 @@ class Section {
      * than 8 characters. Long names in object files are truncated if they are
      * emitted to an executable file.
      */
-    public string $name;
+    public string $nameString;
 
     /**
      * The total size of the section when loaded into memory. If this value is

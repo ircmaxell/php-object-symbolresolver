@@ -7,13 +7,6 @@
 namespace PHPObjectSymbolResolver\PE;
 
 /**
- * Useful URLs:
- *
- * - https://github.com/cubiclesoft/php-winpefile/blob/master/support/win_pe_file.php
- * - https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg
- */
-
-/**
  * @see https://learn.microsoft.com/en-gb/windows/win32/debug/pe-format
  */
 class Parser extends \PHPObjectSymbolResolver\Parser {
@@ -298,8 +291,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
     protected function parsePeSection($offset) {
         $section = new Section();
 
-        $section->offset = $offset;
-        $section->name = $this->parseString($offset, 8);
+        $section->nameString = $this->parseString($offset, 8);
         $section->virtualSize = $this->parseWord($offset);
         $section->virtualAddress = $this->parseWord($offset);
         $section->sizeOfRawData = $this->parseWord($offset);
@@ -323,7 +315,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         $directoryEntrySize = ImportDirectoryEntry::SIZEOF;
 
         $section = new Section;
-        $section->name = '.idata';
+        $section->nameString = '.idata';
         $section->virtualAddress = $this->obj->importTableRva;
         $section->virtualSize = $this->obj->importTableSize;
         $section->sizeOfRawData = $this->obj->importTableSize;
@@ -385,7 +377,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         $edtOffset = $this->obj->translateRva($this->obj->exportTableRva);
 
         $section = new Section;
-        $section->name = '.edata';
+        $section->nameString = '.edata';
         $section->virtualAddress = $this->obj->exportTableRva;
         $section->virtualSize = $this->obj->exportTableSize;
         $section->sizeOfRawData = $this->obj->exportTableSize;
@@ -493,7 +485,7 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         } else {
             $offset = $this->obj->translateRva($lookupTable);
             $hint = $this->parseHalf($offset);
-            $name = $this->parseNullTerminatedString($offset);
+            $name = $this->parseString($offset);
             $entry->nameString = $name;
         }
 
@@ -514,12 +506,13 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         $entry->ordinal = $this->parseWord($ordOffset);
 
         $eATA = $entryDirectoryTable->exportAddressTableAddress;
-        $exportedAddressRva = $eATA + $entry->ordinal;
+        $exportedAddressOffset = $eATA + ($entry->ordinal * 4);
 
-        $exportedNameAddress = $this->obj->translateRva($entry->nameRva);
+        $exportedNameOffset = $this->obj->translateRva($entry->nameRva);
 
-        $entry->nameString = $this->parseString($exportedNameAddress);
-        $entry->value = $this->parseWord($exportedAddressRva);
+        $entry->nameString = $this->parseString($exportedNameOffset);
+        $entry->address = $this->parseWord($exportedAddressOffset);
+        $entry->value = $this->parseWord($entry->address);
 
         /**
          * The exported address can be one of two formats. If the exported
@@ -532,13 +525,13 @@ class Parser extends \PHPObjectSymbolResolver\Parser {
         $endExportSection = $startExportSection + $this->obj->exportTableSize;
 
         if (
-            $exportedAddressRva >= $startExportSection &&
-            $exportedAddressRva <= $endExportSection
+            $entry->address >= $startExportSection &&
+            $entry->address <= $endExportSection
         ) {
             // We have a forwarder RVA.
-            $forwarderStringAddress = $this->obj->translateRva($exportedAddressRva);
+            $forwarderOffset = $entry->value;
             $entry->isForwarder = true;
-            $entry->forwarderString = $this->parseString($forwarderStringAddress);
+            $entry->forwarderString = $this->parseString($forwarderOffset);
         }
 
         return $entry;
