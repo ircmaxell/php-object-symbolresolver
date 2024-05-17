@@ -1,6 +1,6 @@
 {
     "name": "ircmaxell/php-object-symbolresolver",
-    "description": "An object file (ELF, Mach-O) parser",
+    "description": "An object file (ELF, Mach-O, PE) parser",
     "license": "MIT",
     "authors": [
         {
@@ -10,6 +10,10 @@
         {
             "name": "Bob Weinand",
             "email": "bobwei9@hotmail.com"
+        },
+        {
+            "name": "Shane Thompson",
+            "email": "me@shane.pt"
         }
     ],
     "require": {
