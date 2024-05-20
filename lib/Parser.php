@@ -23,9 +23,16 @@ abstract class Parser {
 		} elseif ($magic === FatBinary::MAGIC) {
             $fatBinary = new FatBinary($file);
             return (new MachO\Parser)->parse($file, $fatBinary->getOffsetForLocalArch());
-        }
+		} elseif (PE\Parser::isPortableExecutable($file)) {
+			return (new PE\Parser)->parse($file);
+        } elseif (substr($magic, 0, 2) === PE\Parser::HEADER) {
+			throw new \LogicException(
+				"File is MS-DOS compatible but is not in the PE format. " .
+				"MS-DOS executables are not supported."
+			);
+		}
 
-		throw new \LogicException("File is neither in ELF nor Mach-O format");
+		throw new \LogicException("File is neither in ELF, Mach-O nor PE format");
 	}
 
 	protected function parseAddr(int &$offset): string {
