@@ -64,6 +64,7 @@ abstract class Parser {
 		} elseif ($this->obj->is64Bit()) {
 			return $this->parseWidth(8, $offset);
 		}
+		return 0;
 	}
 
 	protected function parseWidth(int $width, int &$offset): int {
