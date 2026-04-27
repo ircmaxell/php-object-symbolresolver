@@ -1,5 +1,9 @@
 # PHP-ELF-SymbolResolver
 
+## Requirements
+
+- PHP 8.4 or later
+
 A symbol resolver for ELF files, to extract what symbols are defined.
 
 ## Why?
